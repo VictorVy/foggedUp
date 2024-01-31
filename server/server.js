@@ -32,3 +32,4 @@ let handleForm = (req, res) => {
 		res.writeHead(200).end(JSON.stringify({fields, files}));
 	});
 };
+
