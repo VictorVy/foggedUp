@@ -1,4 +1,5 @@
 const http = require("http");
+// const fs = require("fs");
 const formidable = require("formidable");
 
 const server = http.createServer();
@@ -31,3 +32,4 @@ let handleForm = (req, res) => {
 		res.writeHead(200).end(JSON.stringify({fields, files}));
 	});
 };
+
