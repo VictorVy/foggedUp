@@ -18,7 +18,6 @@ server.on("request", (req, res) => {
 			//if (req.url === "/up" || res.getHeader("Content-type") === "multipart/form-data") {
 				//handleForm(req, res);
 			//}
-
 			console.log("check1");
 			let form = new formidable.IncomingForm();
 
@@ -26,7 +25,6 @@ server.on("request", (req, res) => {
 			form.parse(req, (err, fields, files) => {
 				res.writeHead(200).end(JSON.stringify({fields, files}));
 			});
-
 			console.log("check3");
 			break;
 		default:
