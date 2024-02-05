@@ -1,8 +1,7 @@
-const http = require("http");
-// const fs = require("fs");
-const formidable = require("formidable");
+import { createServer } from "http";
+import { IncomingForm } from "formidable";
 
-const server = http.createServer();
+const server = createServer();
 server.on("listening", () => console.log("Listening..."));
 server.on("request", (req, res) => {
 	res.setHeader("Content-type", "text/plain");
@@ -26,7 +25,7 @@ server.on("request", (req, res) => {
 server.listen(1919);
 
 let handleForm = (req, res) => {
-	let form = new formidable.IncomingForm();
+	let form = new IncomingForm();
 
 	form.parse(req, (err, fields, files) => {
 		res.writeHead(200).end(JSON.stringify({fields, files}));

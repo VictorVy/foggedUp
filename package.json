@@ -18,5 +18,6 @@
     "url": "https://github.com/VictorVy/foggedUp/issues"
   },
   "homepage": "https://github.com/VictorVy/foggedUp#readme",
-  "description": ""
+  "description": "",
+  "type": "module"
 }
