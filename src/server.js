@@ -3,11 +3,7 @@ import { createServer as createHTTPSServer } from "https";
 import fs from "fs";
 import { IncomingForm } from "formidable";
 
-const server = createHTTPServer();
-
-server.on("listening", () => console.log("HTTP listening..."));
-
-server.on("request", (req, res) => {
+function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -27,7 +23,7 @@ server.on("request", (req, res) => {
 			res.writeHead(404).end("Not found");
 			break;
 	}
-});
+}
 
 let handleForm = (req, res) => {
 	let form = new IncomingForm();
@@ -37,39 +33,19 @@ let handleForm = (req, res) => {
 	});
 };
 
-server.listen(1919);
-
-// HTTPS TEST
-
 const options = {
 	key: fs.readFileSync("/etc/letsencrypt/live/fog.victoryao.com/privkey.pem"),
 	cert: fs.readFileSync("/etc/letsencrypt/live/fog.victoryao.com/fullchain.pem")
 };
 
+const httpServer = createHTTPServer();
 const httpsServer = createHTTPSServer(options);
 
+httpServer.on("listening", () => console.log("HTTP listening..."));
 httpsServer.on("listening", () => console.log("HTTPS listening..."));
 
-httpsServer.on("request", (req, res) => {
-	res.setHeader("Content-type", "text/plain");
-	res.setHeader("Access-Control-Allow-Origin", "*");
+httpServer.on("request", handleRequest);
+httpsServer.on("request", handleRequest);
 
-	console.log("Request method: " + req.method + "\nRequest URL: " + req.url + "\nRequest headers:");
-	console.log(req.headers);
-
-	switch(req.method.toUpperCase()) {
-		case "GET":
-			res.writeHead(200).end("GET response");
-			break;
-		case "POST":
-			if (req.url === "/up" || res.getHeader("Content-type") === "multipart/form-data") {
-				handleForm(req, res);
-			}
-			break;
-		default:
-			res.writeHead(404).end("Not found");
-			break;
-	}
-});
-
+httpServer.listen(1919);
 httpsServer.listen(4242);
