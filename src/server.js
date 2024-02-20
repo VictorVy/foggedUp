@@ -7,12 +7,12 @@ function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
 
-	console.log("Request method: " + req.method + "\nRequest URL: " + req.url + "\nRequest headers:");
-	console.log(req.headers);
+	// console.log("Request method: " + req.method + "\nRequest URL: " + req.url + "\nRequest headers:");
+	// console.log(req.headers);
 
 	switch(req.method.toUpperCase()) {
 		case "GET":
-			res.writeHead(200).end("GET response");
+			serveFiles(req, res);
 			break;
 		case "POST":
 			if (req.url === "/up" || res.getHeader("Content-type") === "multipart/form-data") {
@@ -23,6 +23,17 @@ function handleRequest(req, res) {
 			res.writeHead(404).end("Not found");
 			break;
 	}
+}
+
+let serveFiles = (req, res) => {
+	fs.readFile("../public/index.html", (err, data) => {
+		if (err) {
+			res.writeHead(500).end(err.message);
+		} else {
+			res.setHeader("Content-type", "text/html");
+			res.writeHead(200).end(data);
+		}
+	});
 }
 
 let handleForm = (req, res) => {
