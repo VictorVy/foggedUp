@@ -1,6 +1,7 @@
-import { createServer as createHTTPServer } from "http";
-import { createServer as createHTTPSServer } from "https";
-import fs from "fs";
+import { createServer as createHTTPServer } from "node:http";
+import { createServer as createHTTPSServer } from "node:https";
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import { IncomingForm } from "formidable";
 
 function handleRequest(req, res) {
@@ -26,14 +27,22 @@ function handleRequest(req, res) {
 }
 
 let serveFiles = (req, res) => {
-	fs.readFile("../public/index.html", (err, data) => {
-		if (err) {
-			res.writeHead(500).end(err.message);
-		} else {
-			res.setHeader("Content-type", "text/html");
-			res.writeHead(200).end(data);
-		}
-	});
+	// fs.readFile("../public/index.html", (err, data) => {
+	// 	if (err) {
+	// 		res.writeHead(500).end(err.message);
+	// 	} else {
+	// 		res.setHeader("Content-type", "text/html");
+	// 		res.writeHead(200).end(data);
+	// 	}
+	// });
+
+	let stream = fs.createReadStream("../public/index.html");
+	stream.pipe(res);
+	stream.on("error", (err) => {
+		res.writeHead(500).end(err.message);
+		stream.end().destroy();
+		console.error(err);
+	})
 }
 
 let handleForm = (req, res) => {
@@ -55,8 +64,14 @@ const httpsServer = createHTTPSServer(options);
 httpServer.on("listening", () => console.log("HTTP listening..."));
 httpsServer.on("listening", () => console.log("HTTPS listening..."));
 
-httpServer.on("request", handleRequest);
-httpsServer.on("request", handleRequest);
+httpServer.on("request", (req, res) => {
+	console.log("HTTP request received...");
+	handleRequest(req, res);
+});
+httpsServer.on("request", (req, res) => {
+	console.log("HTTPS request received...");
+	handleRequest(req, res);
+});
 
 httpServer.listen(1919);
 httpsServer.listen(4242);
