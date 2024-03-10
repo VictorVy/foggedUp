@@ -4,6 +4,12 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import { IncomingForm } from "formidable";
 
+
+let htmlPromise = fsPromises.readFile("../public/index.html");
+let cssPromise = fsPromises.readFile("../public/style.css");
+let jsPromise = fsPromises.readFile("../public/index.js");
+
+
 function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,14 +33,7 @@ function handleRequest(req, res) {
 }
 
 let serveFiles = (req, res) => {
-	// fs.readFile("../public/index.html", (err, data) => {
-	// 	if (err) {
-	// 		res.writeHead(500).end(err.message);
-	// 	} else {
-	// 		res.setHeader("Content-type", "text/html");
-	// 		res.writeHead(200).end(data);
-	// 	}
-	// });
+	res.setHeader("Content-Type", "text/html");
 
 	let stream = fs.createReadStream("../public/index.html");
 	stream.pipe(res);
@@ -52,6 +51,7 @@ let handleForm = (req, res) => {
 		res.writeHead(200).end(JSON.stringify({fields, files}));
 	});
 };
+
 
 const options = {
 	key: fs.readFileSync("/etc/letsencrypt/live/fog.victoryao.com/privkey.pem"),
@@ -73,5 +73,9 @@ httpsServer.on("request", (req, res) => {
 	handleRequest(req, res);
 });
 
-httpServer.listen(1919);
-httpsServer.listen(4242);
+Promise.allSettled([htmlPromise, cssPromise, jsPromise].map(p => p.catch(e => console.error(e.message))))
+.then(([results]) => {
+	httpServer.listen(1919);
+	httpsServer.listen(4242);
+})
+.catch((err) => console.error(err.message)); //should never reach this line
