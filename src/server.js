@@ -4,10 +4,19 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import { IncomingForm } from "formidable";
 
+let filePromises = {
+	"index.html": fsPromises.readFile("../public/index.html"),
+	"style.css": fsPromises.readFile("../public/style.css"),
+	"index.js": fsPromises.readFile("../public/index.js"),
+	"favicon.ico": fsPromises.readFile("../public/favicon.ico")
+}
 
-let htmlPromise = fsPromises.readFile("../public/index.html");
-let cssPromise = fsPromises.readFile("../public/style.css");
-let jsPromise = fsPromises.readFile("../public/index.js");
+let files = {
+	"index.html": undefined,
+	"style.css": undefined,
+	"index.js": undefined,
+	"favicon.ico": undefined
+};
 
 
 function handleRequest(req, res) {
@@ -27,21 +36,21 @@ function handleRequest(req, res) {
 			}
 			break;
 		default:
-			res.writeHead(404).end("Not found");
+			res.writeHead(400).end("Bad Request");	
 			break;
 	}
 }
 
 let serveFiles = (req, res) => {
-	res.setHeader("Content-Type", "text/html");
-
-	let stream = fs.createReadStream("../public/index.html");
-	stream.pipe(res);
-	stream.on("error", (err) => {
-		res.writeHead(500).end(err.message);
-		stream.end().destroy();
-		console.error(err);
-	})
+	let url = req.url;
+	let requested = url.slice(1);
+	// console.log("Requested file: " + requested);
+	if (requested === "") {	
+		res.setHeader("Content-Type", "text/html");
+		res.writeHead(200).end(files["index.html"]);
+	} else {
+		res.writeHead(200).end(files[requested]);
+	}
 }
 
 let handleForm = (req, res) => {
@@ -73,8 +82,13 @@ httpsServer.on("request", (req, res) => {
 	handleRequest(req, res);
 });
 
-Promise.allSettled([htmlPromise, cssPromise, jsPromise].map(p => p.catch(e => console.error(e.message))))
-.then(([results]) => {
+Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.error(e.message))))
+.then((results) => {
+	let keys = Object.keys(files);
+	results.forEach((result, i) => {
+		files[keys[i]] = result.value;
+	});
+
 	httpServer.listen(1919);
 	httpsServer.listen(4242);
 })
