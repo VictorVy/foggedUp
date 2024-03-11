@@ -1,5 +1,4 @@
-import { createServer as createHTTPServer } from "node:http";
-import { createServer as createHTTPSServer } from "node:https";
+import { createServer } from "node:http";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import { IncomingForm } from "formidable";
@@ -25,9 +24,6 @@ function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
 
-	// console.log("Request method: " + req.method + "\nRequest URL: " + req.url + "\nRequest headers:");
-	// console.log(req.headers);
-
 	switch(req.method.toUpperCase()) {
 		case "GET":
 			serveFiles(req, res);
@@ -46,7 +42,7 @@ function handleRequest(req, res) {
 function serveFiles(req, res) {
 	let url = req.url;
 	let requested = url.slice(1);
-	// console.log("Requested file: " + requested);
+
 	if (requested === "") {	
 		requested = "index.html";
 	}
@@ -63,26 +59,14 @@ function handleForm(req, res) {
 	});
 };
 
-
-// const options = {
-// 	key: fs.readFileSync(process.env.LE_PRIV_KEY),
-// 	cert: fs.readFileSync(process.env.LE_CERT)
-// };
-
-const httpServer = createHTTPServer();
-// const httpsServer = createHTTPSServer(options);
+const httpServer = createServer();
 
 httpServer.on("listening", () => console.log("HTTP listening..."));
-// httpsServer.on("listening", () => console.log("HTTPS listening..."));
 
 httpServer.on("request", (req, res) => {
 	console.log("HTTP request received...");
 	handleRequest(req, res);
 });
-// httpsServer.on("request", (req, res) => {
-// 	console.log("HTTPS request received...");
-// 	handleRequest(req, res);
-// });
 
 Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.error(e.message))))
 .then((results) => {
@@ -91,7 +75,6 @@ Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.err
 		files[keys[i]] = result.value;
 	});
 
-	httpServer.listen(1919);
-	// httpsServer.listen(4242);
+	httpServer.listen(process.env.PORT);
 })
-.catch((err) => console.error(err.message)); //should never reach this line
+.catch((err) => console.error(err.message));
