@@ -3,12 +3,14 @@ import { createServer as createHTTPSServer } from "node:https";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import { IncomingForm } from "formidable";
+import { getContentType } from "./utils.js";
+
 
 let filePromises = {
-	"index.html": fsPromises.readFile("../public/index.html"),
-	"style.css": fsPromises.readFile("../public/style.css"),
-	"index.js": fsPromises.readFile("../public/index.js"),
-	"favicon.ico": fsPromises.readFile("../public/favicon.ico")
+	"index.html": fsPromises.readFile("public/index.html"),
+	"style.css": fsPromises.readFile("public/style.css"),
+	"index.js": fsPromises.readFile("public/index.js"),
+	"favicon.ico": fsPromises.readFile("public/favicon.ico")
 }
 
 let files = {
@@ -41,19 +43,19 @@ function handleRequest(req, res) {
 	}
 }
 
-let serveFiles = (req, res) => {
+function serveFiles(req, res) {
 	let url = req.url;
 	let requested = url.slice(1);
 	// console.log("Requested file: " + requested);
 	if (requested === "") {	
-		res.setHeader("Content-Type", "text/html");
-		res.writeHead(200).end(files["index.html"]);
-	} else {
-		res.writeHead(200).end(files[requested]);
+		requested = "index.html";
 	}
+
+	res.setHeader("Content-Type", getContentType(requested));
+	res.writeHead(200).end(files[requested]);
 }
 
-let handleForm = (req, res) => {
+function handleForm(req, res) {
 	let form = new IncomingForm();
 
 	form.parse(req, (err, fields, files) => {
@@ -62,25 +64,25 @@ let handleForm = (req, res) => {
 };
 
 
-const options = {
-	key: fs.readFileSync("/etc/letsencrypt/live/fog.victoryao.com/privkey.pem"),
-	cert: fs.readFileSync("/etc/letsencrypt/live/fog.victoryao.com/fullchain.pem")
-};
+// const options = {
+// 	key: fs.readFileSync(process.env.LE_PRIV_KEY),
+// 	cert: fs.readFileSync(process.env.LE_CERT)
+// };
 
 const httpServer = createHTTPServer();
-const httpsServer = createHTTPSServer(options);
+// const httpsServer = createHTTPSServer(options);
 
 httpServer.on("listening", () => console.log("HTTP listening..."));
-httpsServer.on("listening", () => console.log("HTTPS listening..."));
+// httpsServer.on("listening", () => console.log("HTTPS listening..."));
 
 httpServer.on("request", (req, res) => {
 	console.log("HTTP request received...");
 	handleRequest(req, res);
 });
-httpsServer.on("request", (req, res) => {
-	console.log("HTTPS request received...");
-	handleRequest(req, res);
-});
+// httpsServer.on("request", (req, res) => {
+// 	console.log("HTTPS request received...");
+// 	handleRequest(req, res);
+// });
 
 Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.error(e.message))))
 .then((results) => {
@@ -90,6 +92,6 @@ Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.err
 	});
 
 	httpServer.listen(1919);
-	httpsServer.listen(4242);
+	// httpsServer.listen(4242);
 })
 .catch((err) => console.error(err.message)); //should never reach this line
