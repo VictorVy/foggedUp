@@ -64,7 +64,7 @@ const httpServer = createServer();
 httpServer.on("listening", () => console.log("HTTP listening..."));
 
 httpServer.on("request", (req, res) => {
-	console.log("HTTP request received...");
+	console.log("HTTP:", req.method, req.url);
 	handleRequest(req, res);
 });
 
