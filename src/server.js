@@ -46,7 +46,7 @@ function serveFiles(req, res) {
 	if (requested === "") {	
 		requested = "index.html";
 	}
-
+	
 	res.setHeader("Content-Type", getContentType(requested));
 	res.writeHead(200).end(files[requested]);
 }

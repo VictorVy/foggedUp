@@ -1,3 +1,3 @@
-// const textField = document.getElementById("text-field");
+const textField = document.getElementById("text-field");
 
-// textField.hidden = false;
+textField.hidden = true;
