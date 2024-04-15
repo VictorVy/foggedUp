@@ -1,9 +1,11 @@
 import { createServer } from "node:http";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
+import os from "node:os";
 import { IncomingForm } from "formidable";
 import { getContentType } from "./utils.js";
 
+const fogDir = os.homedir() + "/fog/";
 
 let filePromises = {
 	"index.html": fsPromises.readFile("public/index.html"),
@@ -19,6 +21,9 @@ let files = {
 	"favicon.ico": undefined
 };
 
+if(!fs.existsSync(fogDir)) {
+	fs.mkdirSync(fogDir);
+}
 
 function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
@@ -55,7 +60,25 @@ function handleForm(req, res) {
 	let form = new IncomingForm();
 
 	form.parse(req, (err, fields, files) => {
-		res.writeHead(200).end(JSON.stringify({fields, files}));
+		if (err) {
+			res.writeHead(500).end(err.message);
+			return;
+		}
+
+		for (let file of files.upload) {
+			let oldPath = file.filepath;
+			let newPath = fogDir + file.originalFilename;
+			
+			fs.rename(oldPath, newPath, (err) => {
+				if (err) {
+					res.writeHead(500).end(err.message);
+					return;
+				}
+			});
+		}
+
+		res.setHeader("Location", "/");
+		res.writeHead(303).end();
 	});
 };
 
