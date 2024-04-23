@@ -14,7 +14,7 @@ let filePromises = {
 	"favicon.ico": fsPromises.readFile("public/favicon.ico")
 }
 
-let files = {
+let srcFiles = {
 	"index.html": undefined,
 	"style.css": undefined,
 	"index.js": undefined,
@@ -31,7 +31,12 @@ function handleRequest(req, res) {
 
 	switch(req.method.toUpperCase()) {
 		case "GET":
-			serveFiles(req, res);
+			if (req.url === "/files") {
+				res.setHeader("Content-type", "application/json");
+				res.writeHead(200).end(JSON.stringify(getFiles(fogDir)));	
+			} else {
+				serveFiles(req, res);
+			}
 			break;
 		case "POST":
 			if (req.url === "/up" || res.getHeader("Content-type") === "multipart/form-data") {
@@ -51,9 +56,14 @@ function serveFiles(req, res) {
 	if (requested === "") {	
 		requested = "index.html";
 	}
-	
+
+	if (!srcFiles[requested]) {
+		res.writeHead(404).end("404 Not Found");
+		return;
+	}
+
 	res.setHeader("Content-Type", getContentType(requested));
-	res.writeHead(200).end(files[requested]);
+	res.writeHead(200).end(srcFiles[requested]);
 }
 
 function handleForm(req, res) {
@@ -82,6 +92,18 @@ function handleForm(req, res) {
 	});
 };
 
+function getFiles(dir) {
+	let dirContents = fs.readdirSync(dir, { withFileTypes: true });
+	let list = [];
+
+	dirContents.forEach((file) => {
+		list.push(file.name);
+	});
+
+	return list;
+}
+
+
 const httpServer = createServer();
 
 httpServer.on("listening", () => console.log("HTTP listening..."));
@@ -93,9 +115,9 @@ httpServer.on("request", (req, res) => {
 
 Promise.allSettled(Object.values(filePromises).map(p => p.catch(e => console.error(e.message))))
 .then((results) => {
-	let keys = Object.keys(files);
+	let keys = Object.keys(srcFiles);
 	results.forEach((result, i) => {
-		files[keys[i]] = result.value;
+		srcFiles[keys[i]] = result.value;
 	});
 
 	httpServer.listen(process.env.PORT);
