@@ -6,6 +6,7 @@ import { IncomingForm } from "formidable";
 import { getContentType } from "./utils.js";
 
 const fogDir = os.homedir() + "/fog/";
+let currDir = "/fog";
 
 let filePromises = {
 	"index.html": fsPromises.readFile("public/index.html"),
@@ -31,7 +32,10 @@ function handleRequest(req, res) {
 
 	switch(req.method.toUpperCase()) {
 		case "GET":
-			if (req.url === "/files") {
+			if (req.url === "/") {
+				res.setHeader("Location", "/fog");
+				res.writeHead(303).end();
+			} else if (req.url.startsWith("/files")) {
 				res.setHeader("Content-type", "application/json");
 				res.writeHead(200).end(JSON.stringify(getFiles(fogDir)));	
 			} else {
@@ -53,7 +57,7 @@ function serveFiles(req, res) {
 	let url = req.url;
 	let requested = url.slice(1);
 
-	if (requested === "") {	
+	if (requested.startsWith("fog") && fs.existsSync(os.homedir() + url)) {	
 		requested = "index.html";
 	}
 
@@ -87,7 +91,7 @@ function handleForm(req, res) {
 			});
 		}
 
-		res.setHeader("Location", "/");
+		res.setHeader("Location", currDir);
 		res.writeHead(303).end();
 	});
 };
