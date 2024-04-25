@@ -9,12 +9,14 @@
 </head>
 
 <body>
-    <h1>foggedUp</h1>
-    <form action="/up" method="post" enctype="multipart/form-data">
-        <input type="text" name="title" id="text-field"><br>
-        <input type="file" name="upload" multiple="multiple"><br>
-        <input type="submit" value="Upload">
-    </form>
+    <div id="bar">
+        <h1>foggedUp</h1>
+        <form action="/up" method="post" enctype="multipart/form-data">
+            <input type="file" name="upload" multiple="multiple"><br>
+            <input type="submit" value="Upload">
+        </form>
+        <div></div>
+    </div>
     <div id="files" class="flex-box"></div>
     <script src="index.js"></script>
 </body>

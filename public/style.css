@@ -1,11 +1,35 @@
 body {
     background-color: whitesmoke;
+    padding: 0% 1%;
+}
+
+body > *:not(:last-child) {
+    margin-bottom: 1em; 
+}
+
+form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: teal;
 }
 
 .flex-box {
     display: flex;
+    column-gap: 1em;
+    row-gap: 0.5em;
+    padding: 1em;
+    background-color: cadetblue;
 }
 
-.item {
-    padding: 1em;
+.item-wrapper {
+    padding: 0.5em;
+    background-color: royalblue;
+}
+
+#bar {
+    display: grid;
+    grid-template-columns: min-content auto auto;
+    background-color: aliceblue;
 }

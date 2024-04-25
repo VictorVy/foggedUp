@@ -96,8 +96,10 @@ function getFiles(dir) {
 	let dirContents = fs.readdirSync(dir, { withFileTypes: true });
 	let list = [];
 
-	dirContents.forEach((file) => {
-		list.push(file.name);
+	dirContents.forEach((ent) => {
+		if (ent.isDirectory() || ent.isFile()) {
+			list.push({ name: ent.name, isDir: ent.isDirectory()});
+		}
 	});
 
 	return list;
