@@ -15,7 +15,7 @@ function createItemWrapper(item) {
     return div;
 }
 
-fetch("/files").then((res) => {
+fetch("/files?path=" + location.pathname).then((res) => {
     return res.json();
 }).then((data) => {
     data.forEach((item) => {        

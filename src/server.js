@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import os from "node:os";
+import url from "node:url";
 import { IncomingForm } from "formidable";
 import { getContentType } from "./utils.js";
 
@@ -29,6 +30,9 @@ if(!fs.existsSync(fogDir)) {
 function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
+	
+	const parsedUrl = url.parse(req.url, true);
+	console.log(parsedUrl.query.path);
 
 	switch(req.method.toUpperCase()) {
 		case "GET":
