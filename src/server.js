@@ -31,17 +31,13 @@ function handleRequest(req, res) {
 	res.setHeader("Content-type", "text/plain");
 	res.setHeader("Access-Control-Allow-Origin", "*");
 	
-	const parsedUrl = url.parse(req.url, true);
-	console.log(parsedUrl.query.path);
-
 	switch(req.method.toUpperCase()) {
 		case "GET":
 			if (req.url === "/") {
 				res.setHeader("Location", "/fog");
 				res.writeHead(303).end();
 			} else if (req.url.startsWith("/files")) {
-				res.setHeader("Content-type", "application/json");
-				res.writeHead(200).end(JSON.stringify(getFiles(fogDir)));	
+				serveFogFiles(req, res);
 			} else {
 				serveFiles(req, res);
 			}
@@ -55,6 +51,20 @@ function handleRequest(req, res) {
 			res.writeHead(400).end("Bad Request");	
 			break;
 	}
+}
+
+function serveFogFiles(req, res) {
+	const parsedUrl = url.parse(req.url, true);
+	const path = os.homedir + parsedUrl.query.path;
+
+	if (!fs.existsSync(path)) {
+
+		res.writeHead(404).end("404 Not Found");
+		return;
+	}
+
+	res.setHeader("Content-type", "application/json");
+	res.writeHead(200).end(JSON.stringify(getFiles(path)));	
 }
 
 function serveFiles(req, res) {
